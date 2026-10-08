@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pet Rock Simulator</title>
+<meta name="description" content="A pet that does almost nothing. Keep an eye on it anyway.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --page: #E8F0E2;
+  --card: #F6FAF2;
+  --chip: #DCE7D5;
+  --ink: #25302A;
+  --ink-soft: #58675C;
+  --line: #C3D1BC;
+  --sky-top: #A9D8EC;
+  --sky-bottom: #E0F2F1;
+  --cloud: #FFFFFF;
+  --sun: #FFD866;
+  --grass: #8DC06E;
+  --grass-dark: #5C9347;
+  --rock: #A2A8B1;
+  --rock-dark: #6C7480;
+  --rock-light: #C9CED5;
+  --face: #2F343B;
+  --coral: #FF8574;
+  --accent: #3D7A52;
+  --accent-ink: #FFFFFF;
+  --focus: #1D6FE0;
+  --bubble: #FFFFFF;
+  --tier-common: #A6B2A0;
+  --tier-uncommon: #4F9D6B;
+  --tier-rare: #E8A91E;
+  --rare-wash: #FFF3CF;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #141B17;
+    --card: #1C2620;
+    --chip: #2A382F;
+    --ink: #E7F0E6;
+    --ink-soft: #A5B5A8;
+    --line: #34443A;
+    --sky-top: #16243A;
+    --sky-bottom: #2F4D69;
+    --cloud: #9FB3C8;
+    --sun: #EDEBC8;
+    --grass: #3E6B3A;
+    --grass-dark: #2C4F2E;
+    --rock: #8A919B;
+    --rock-dark: #5C636E;
+    --rock-light: #AAB1BA;
+    --face: #1F2329;
+    --coral: #F08474;
+    --accent: #6FBF8B;
+    --accent-ink: #10241A;
+    --focus: #7FB2FF;
+    --bubble: #243029;
+    --tier-common: #5B6E5F;
+    --tier-uncommon: #5FB07C;
+    --tier-rare: #F2B93B;
+    --rare-wash: #3A3217;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #141B17;
+  --card: #1C2620;
+  --chip: #2A382F;
+  --ink: #E7F0E6;
+  --ink-soft: #A5B5A8;
+  --line: #34443A;
+  --sky-top: #16243A;
+  --sky-bottom: #2F4D69;
+  --cloud: #9FB3C8;
+  --sun: #EDEBC8;
+  --grass: #3E6B3A;
+  --grass-dark: #2C4F2E;
+  --rock: #8A919B;
+  --rock-dark: #5C636E;
+  --rock-light: #AAB1BA;
+  --face: #1F2329;
+  --coral: #F08474;
+  --accent: #6FBF8B;
+  --accent-ink: #10241A;
+  --focus: #7FB2FF;
+  --bubble: #243029;
+  --tier-common: #5B6E5F;
+  --tier-uncommon: #5FB07C;
+  --tier-rare: #F2B93B;
+  --rare-wash: #3A3217;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.app {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 20px 16px 36px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+}
+.head h1 {
+  margin: 0;
+  font-family: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 6.5vw, 3.3rem);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+.head p { margin: 6px 0 0; color: var(--ink-soft); }
+
+/* Speech bubble */
+.bubble {
+  position: relative;
+  background: var(--bubble);
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 14px 18px;
+  min-height: 5.6em;
+  display: flex;
+  align-items: center;
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  width: 18px;
+  height: 18px;
+  background: var(--bubble);
+  border-right: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  transform: translateX(-50%) rotate(45deg);
+  border-bottom-right-radius: 4px;
+}
+
+/* Scene */
+.scene {
+  position: relative;
+  aspect-ratio: 5 / 4;
+  border-radius: 28px;
+  overflow: hidden;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom));
+}
+.scene svg { width: 100%; height: 100%; display: block; }
+.sun { fill: var(--sun); transform-box: fill-box; transform-origin: center; }
+.cloud { fill: var(--cloud); opacity: .85; }
+.hill { fill: var(--grass); }
+.hill2 { fill: var(--grass-dark); opacity: .35; }
+.tuft { stroke: var(--grass-dark); stroke-width: 3; stroke-linecap: round; fill: none; }
+.shadow { fill: #000; opacity: .16; }
+.rock { fill: var(--rock); stroke: var(--rock-dark); stroke-width: 4; stroke-linejoin: round; }
+.facet { fill: var(--rock-light); opacity: .65; }
+.speck { fill: var(--rock-dark); opacity: .35; }
+.moss { fill: var(--grass-dark); opacity: .85; }
+.lid { fill: var(--rock); transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .22s ease; }
+#pupils { transition: transform .15s ease-out; }
+.cheek { fill: var(--coral); transition: opacity .3s; opacity: .45; }
+#rockBody { transform-box: fill-box; transform-origin: 50% 100%; cursor: pointer; }
+#rockBody.squish { animation: squish .45s ease-out; }
+#rockBody.hop { animation: hop .75s ease-out; }
+#rockBody.pop { animation: pop .3s ease-out; }
+#rockBody.wobble { animation: wobble .7s ease-in-out; }
+@keyframes squish { 0% { transform: scale(1,1); } 30% { transform: scale(1.08,.88); } 65% { transform: scale(.98,1.03); } 100% { transform: scale(1,1); } }
+@keyframes hop { 0% { transform: translateY(0) scale(1,1); } 18% { transform: translateY(0) scale(1.09,.87); } 45% { transform: translateY(-30px) scale(.96,1.07); } 72% { transform: translateY(0) scale(1.07,.9); } 100% { transform: translateY(0) scale(1,1); } }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.035); } 100% { transform: scale(1); } }
+@keyframes wobble { 0% { transform: rotate(0); } 20% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } 80% { transform: rotate(-2deg); } 100% { transform: rotate(0); } }
+
+.fx-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.fx { position: absolute; left: -20%; line-height: 1; font-size: clamp(18px, 5vw, 28px); will-change: transform, left, top; }
+
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%) translateY(6px);
+  max-width: calc(100% - 24px);
+  background: var(--ink);
+  color: var(--page);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: .9rem;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s, transform .25s;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Name and mood */
+.placard { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 14px; }
+.name {
+  width: 9.5em;
+  max-width: 100%;
+  font-family: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  background: transparent;
+  border: 2px dashed var(--line);
+  border-radius: 14px;
+  padding: 4px 12px;
+}
+.name:hover { border-color: var(--ink-soft); }
+.name:focus { border-style: solid; border-color: var(--accent); outline-offset: 3px; }
+.mood { background: var(--chip); padding: 6px 14px; border-radius: 999px; font-weight: 600; }
+
+/* Away banner */
+.away { background: var(--rare-wash); border: 2px solid var(--tier-rare); border-radius: 20px; padding: 14px 18px; margin-top: 16px; }
+.away h2 { margin: 0 0 6px; font-size: 1.05rem; font-family: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif; }
+.away ul { margin: 0 0 12px; padding-left: 1.2em; }
+.away li { margin: 4px 0; }
+.away[hidden] { display: none; }
+
+/* Buttons */
+.actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 16px; }
+.btn {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 2px solid var(--line);
+  background: var(--card);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .1s, border-color .15s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.small { min-height: 38px; padding: 0 16px; }
+
+/* History panel */
+.book { border: 2px solid var(--line); border-radius: 24px; background: var(--card); overflow: hidden; display: flex; flex-direction: column; }
+.tabs { display: flex; border-bottom: 2px solid var(--line); }
+.tab { flex: 1; padding: 14px 10px; background: none; border: 0; cursor: pointer; font-weight: 700; color: var(--ink-soft); }
+.tab[aria-selected="true"] { color: var(--ink); box-shadow: inset 0 -4px 0 var(--accent); }
+.panel { padding: 8px 18px 18px; }
+.panel[hidden] { display: none; }
+.log { list-style: none; margin: 0; padding: 0; }
+.entry { --tier: var(--tier-common); border-left: 4px solid var(--tier); padding: 2px 0 2px 12px; margin: 14px 0; }
+.entry.tier-uncommon { --tier: var(--tier-uncommon); }
+.entry.tier-rare { --tier: var(--tier-rare); }
+.entry.tier-action { --tier: var(--accent); }
+.entry p { margin: 2px 0 0; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .8rem; color: var(--ink-soft); }
+.tag { font-size: .75rem; font-weight: 700; padding: 1px 9px; border-radius: 999px; background: var(--chip); color: var(--ink); }
+.tag.rare { background: var(--tier-rare); color: #2B1F00; }
+.empty { color: var(--ink-soft); margin: 18px 0; }
+
+.book-count { margin: 12px 0 14px; color: var(--ink-soft); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.moment { --tier: var(--tier-common); border: 2px solid var(--tier); border-radius: 14px; padding: 12px; background: var(--page); }
+.moment.tier-uncommon { --tier: var(--tier-uncommon); }
+.moment.tier-rare { --tier: var(--tier-rare); }
+.moment.locked { border-style: dashed; color: var(--ink-soft); }
+.moment h3 { margin: 0 0 4px; font-size: 1rem; font-family: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif; }
+.moment p { margin: 0; font-size: .92rem; }
+.moment .rarity { margin-top: 8px; font-size: .78rem; font-weight: 700; color: var(--ink-soft); }
+
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 16px; color: var(--ink-soft); font-size: .88rem; }
+.foot p { margin: 0; }
+.linkish { background: none; border: 0; padding: 6px 2px; text-decoration: underline; cursor: pointer; color: var(--ink-soft); }
+.linkish:hover { color: var(--ink); }
+
+@media (min-width: 880px) {
+  .app { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); gap: 28px 40px; padding-top: 32px; align-items: start; }
+  .head, .foot { grid-column: 1 / -1; }
+  .left { position: sticky; top: 16px; }
+  .panel { max-height: 580px; overflow-y: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="head">
+    <h1>Pet Rock Simulator</h1>
+    <p>A pet that does almost nothing. Keep an eye on it anyway.</p>
+  </header>
+
+  <div class="left">
+    <div class="bubble" id="bubble" aria-live="polite"></div>
+
+    <div class="scene" id="scene">
+      <svg id="rockSvg" viewBox="0 0 400 320" role="img" aria-label="A grey pet rock with a face, sitting in the grass">
+        <defs>
+          <clipPath id="clipL"><circle cx="172" cy="190" r="13"/></clipPath>
+          <clipPath id="clipR"><circle cx="228" cy="190" r="13"/></clipPath>
+        </defs>
+        <circle class="sun" id="sun" cx="335" cy="62" r="26"/>
+        <g class="cloud">
+          <ellipse cx="70" cy="56" rx="30" ry="12"/>
+          <ellipse cx="94" cy="48" rx="20" ry="12"/>
+          <ellipse cx="250" cy="34" rx="24" ry="9"/>
+          <ellipse cx="268" cy="28" rx="15" ry="9"/>
+        </g>
+        <path class="hill" d="M0 252 Q100 230 200 244 T400 240 L400 320 L0 320 Z"/>
+        <path class="hill2" d="M0 286 Q120 270 220 284 T400 278 L400 320 L0 320 Z"/>
+        <path class="tuft" d="M58 266 l-5 -13 M58 266 l2 -11 M58 266 l9 -10 M338 258 l-4 -12 M338 258 l3 -10 M338 258 l9 -8 M356 292 l-4 -11 M356 292 l3 -9 M96 298 l-3 -10 M96 298 l4 -9"/>
+        <circle cx="330" cy="272" r="4.5" fill="var(--coral)"/>
+        <circle cx="82" cy="282" r="4.5" fill="var(--sun)"/>
+        <circle cx="366" cy="262" r="4" fill="#fff"/>
+        <ellipse class="shadow" cx="200" cy="268" rx="98" ry="10"/>
+        <g id="rockBody">
+          <path class="rock" d="M120 250 C100 215 108 170 140 148 C165 128 215 122 248 142 C282 162 296 208 282 246 C278 258 262 266 240 266 L150 266 C132 266 124 260 120 250 Z"/>
+          <path class="facet" d="M148 170 C160 146 200 136 236 150 C206 152 176 154 150 176 Z"/>
+          <circle class="speck" cx="150" cy="236" r="2.5"/>
+          <circle class="speck" cx="252" cy="240" r="3"/>
+          <circle class="speck" cx="130" cy="214" r="2"/>
+          <circle class="speck" cx="270" cy="206" r="2.5"/>
+          <circle class="speck" cx="178" cy="254" r="2"/>
+          <path class="moss" d="M214 140 q10 -8 22 -2 q8 6 2 12 q-12 4 -24 -10 z"/>
+          <g id="face">
+            <ellipse class="cheek" id="cheekL" cx="150" cy="210" rx="9" ry="6"/>
+            <ellipse class="cheek" id="cheekR" cx="250" cy="210" rx="9" ry="6"/>
+            <circle cx="172" cy="190" r="13" fill="#fff"/>
+            <circle cx="228" cy="190" r="13" fill="#fff"/>
+            <g id="pupils">
+              <circle cx="172" cy="190" r="6" fill="var(--face)"/>
+              <circle cx="228" cy="190" r="6" fill="var(--face)"/>
+              <circle cx="170" cy="188" r="2" fill="#fff"/>
+              <circle cx="226" cy="188" r="2" fill="#fff"/>
+            </g>
+            <g clip-path="url(#clipL)"><rect class="lid" id="lidL" x="158" y="176" width="28" height="28"/></g>
+            <g clip-path="url(#clipR)"><rect class="lid" id="lidR" x="214" y="176" width="28" height="28"/></g>
+            <line id="browL" x1="160" y1="170" x2="184" y2="170" stroke="var(--face)" stroke-width="4" stroke-linecap="round"/>
+            <line id="browR" x1="216" y1="170" x2="240" y2="170" stroke="var(--face)" stroke-width="4" stroke-linecap="round"/>
+            <path id="mouth" d="M184 221 Q200 234 216 221" fill="none" stroke="var(--face)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+        </g>
+      </svg>
+      <div class="fx-layer" id="fx" aria-hidden="true"></div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+
+    <div class="placard">
+      <input class="name" id="nameInput" maxlength="16" aria-label="Your rock's name (click to rename)" spellcheck="false" autocomplete="off">
+      <span class="mood" id="moodChip"></span>
+    </div>
+
+    <section class="away" id="away" hidden aria-labelledby="awayTitle">
+      <h2 id="awayTitle"></h2>
+      <ul id="awayList"></ul>
+      <button class="btn small" id="awayClose" type="button">Okay</button>
+    </section>
+
+    <div class="actions" role="group" aria-label="Things you can do">
+      <button class="btn primary" type="button" data-action="pet"><span aria-hidden="true">✋</span>Pet</button>
+      <button class="btn" type="button" data-action="talk"><span aria-hidden="true">💬</span>Talk</button>
+      <button class="btn" type="button" data-action="walk"><span aria-hidden="true">🥾</span>Take for a walk</button>
+      <button class="btn" type="button" data-action="pebble"><span aria-hidden="true">🪨</span>Show a pebble</button>
+      <button class="btn" type="button" data-action="nothing"><span aria-hidden="true">🧘</span>Do nothing</button>
+    </div>
+  </div>
+
+  <section class="book" aria-label="Rock history">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tabLog" aria-selected="true" aria-controls="panelLog" type="button">What's happened</button>
+      <button class="tab" role="tab" id="tabBook" aria-selected="false" aria-controls="panelBook" tabindex="-1" type="button">Scrapbook</button>
+    </div>
+    <div class="panel" id="panelLog" role="tabpanel" aria-labelledby="tabLog">
+      <ol class="log" id="log"></ol>
+    </div>
+    <div class="panel" id="panelBook" role="tabpanel" aria-labelledby="tabBook" hidden>
+      <p class="book-count" id="bookCount"></p>
+      <div class="grid" id="bookGrid"></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p id="stats"></p>
+    <button class="linkish" id="resetBtn" type="button">Adopt a new rock</button>
+  </footer>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORE_KEY = 'petrock:v1';
+  const $ = (s) => document.querySelector(s);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const prefersReduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Moods: label + face ---------- */
+  // bl / br = [vertical shift, rotation] for each brow. look = pupil offset.
+  const MOODS = {
+    content:     { label: 'Content',                mouth: 'M184 221 Q200 234 216 221',                         lid: 0,   bl: [0, 0],    br: [0, 0],    cheek: .45, look: [0, 0] },
+    smug:        { label: 'Smug',                   mouth: 'M180 223 Q204 235 227 212',                         lid: .45, bl: [-5, -4],  br: [2, -8],   cheek: 0,   look: [0, 0] },
+    existential: { label: 'Existential',            mouth: 'M184 227 L216 227',                                 lid: .2,  bl: [0, -12],  br: [0, 12],   cheek: 0,   look: [0, -4] },
+    gravity:     { label: 'Thinking about gravity', mouth: 'M193 227 Q200 218 207 227 Q200 237 193 227 Z', fill: true, lid: 0, bl: [-3, -4], br: [-3, 4], cheek: 0, look: [0, 5] },
+    inadequate:  { label: 'Inadequate',             mouth: 'M182 229 Q191 221 200 227 Q209 221 218 229',        lid: .15, bl: [2, -16],  br: [2, 16],   cheek: 0,   look: [-2, 4] },
+    suspicious:  { label: 'Suspicious',             mouth: 'M184 225 L216 222',                                 lid: .5,  bl: [3, 14],   br: [3, -14],  cheek: 0,   look: [6, 0] },
+    sleepy:      { label: 'Sleepy',                 mouth: 'M190 225 Q200 229 210 225',                         lid: 1,   bl: [3, 0],    br: [3, 0],    cheek: .25, look: [0, 0] },
+    proud:       { label: 'Proud',                  mouth: 'M178 217 Q200 240 222 217',                         lid: 0,   bl: [-5, -4],  br: [-5, 4],   cheek: .8,  look: [0, -2] },
+    tolerating:  { label: 'Tolerating this',        mouth: 'M184 227 Q192 222 200 227 T216 227',                lid: .35, bl: [2, 4],    br: [2, -4],   cheek: 0,   look: [0, 0] },
+    delighted:   { label: 'Delighted',              mouth: 'M176 214 Q200 248 224 214 Z', fill: true,          lid: 0,   bl: [-6, -5],  br: [-6, 5],   cheek: 1,   look: [0, -2] }
+  };
+
+  /* ---------- Moments (the scrapbook) ---------- */
+  const EVENTS = [
+    // Common
+    { id: 'leaf',     tier: 'common',   title: 'Leaf',              mood: 'smug',        fx: 'leaf',      text: `A leaf blew past. {name} pretends not to care.` },
+    { id: 'pigeon',   tier: 'common',   title: 'Pigeon',            mood: 'content',     fx: 'bird',      text: `A pigeon landed on {name} for four seconds. Neither of them spoke of it.` },
+    { id: 'cloud',    tier: 'common',   title: 'Cloud lookalike',   mood: 'proud',       fx: 'cloud',     text: `A cloud looked a bit like a rock. {name} found this flattering.` },
+    { id: 'ant',      tier: 'common',   title: 'Ant hike',          mood: 'content',     fx: 'ant',       text: `An ant walked all the way over {name}. {name} considers it a successful hike for the ant.` },
+    { id: 'sun',      tier: 'common',   title: 'Sunshine',          mood: 'content',     fx: 'glow',      text: `The sun came out. {name} feels warm and also slightly seen.` },
+    { id: 'breeze',   tier: 'common',   title: 'Breeze',            mood: 'smug',                         text: `A breeze happened. {name} did not move, exactly as planned.` },
+    { id: 'dew',      tier: 'common',   title: 'Dew',               mood: 'content',                      text: `Morning dew. {name} is damp and refuses to comment.` },
+    { id: 'shadow',   tier: 'common',   title: 'Mystery shadow',    mood: 'suspicious',  fx: 'bird',      text: `A shadow crossed {name}. It was probably just a bird. Probably.` },
+    { id: 'stare',    tier: 'common',   title: 'Staring contest',   mood: 'existential',                  text: `{name} stared at nothing for a while. Nothing stared back.` },
+    { id: 'far',      tier: 'common',   title: 'Distant pebble',    mood: 'inadequate',                   text: `A pebble rolled by in the distance. {name} compared itself to it.` },
+    { id: 'hum',      tier: 'common',   title: 'Humming',           mood: 'content',                      text: `{name} is humming. You can't hear it. Nobody can. It's very committed.` },
+    { id: 'gravity',  tier: 'common',   title: 'Gravity thoughts',  mood: 'gravity',                      text: `{name} thought about gravity. Gravity thought about {name}.` },
+    { id: 'snail',    tier: 'common',   title: 'Speedy snail',      mood: 'suspicious',  fx: 'snail',     text: `A snail passed by at a pace {name} considers aggressive.` },
+    { id: 'sneeze',   tier: 'common',   title: 'Almost sneezed',    mood: 'content',                      text: `{name} almost sneezed. It's a rock. It did not.` },
+    // Uncommon
+    { id: 'rain',     tier: 'uncommon', title: 'Rain shower',       mood: 'proud',       fx: 'rain',      text: `It rained. {name} is the cleanest it has ever been and would like that noted.` },
+    { id: 'child',    tier: 'uncommon', title: 'Big rock',          mood: 'proud',                        text: `A small child pointed at {name} and said "big rock." {name} will remember this forever.` },
+    { id: 'dog',      tier: 'uncommon', title: 'Dog inspection',    mood: 'suspicious',  fx: 'dog',       text: `A dog sniffed {name} very thoroughly. {name} stayed calm. Barely.` },
+    { id: 'bigger',   tier: 'uncommon', title: 'Bigger rock',       mood: 'inadequate',                   text: `{name} spotted a much larger rock across the path. Ambitions were reconsidered.` },
+    { id: 'mountain', tier: 'uncommon', title: 'Mountain',          mood: 'existential',                  text: `{name} looked at a mountain and felt a quiet kinship.` },
+    { id: 'butterfly',tier: 'uncommon', title: 'Butterfly',         mood: 'delighted',   fx: 'butterfly', text: `A butterfly landed on {name}. For a moment, {name} was a flower.` },
+    { id: 'skipper',  tier: 'uncommon', title: 'Show-off',          mood: 'inadequate',                   text: `Someone nearby skipped a stone across a pond. "Show-off," thought {name}.` },
+    { id: 'nap',      tier: 'uncommon', title: 'Nap',               mood: 'sleepy',                       text: `{name} took a nap. It was indistinguishable from not napping.` },
+    { id: 'moon',     tier: 'uncommon', title: 'Moonrise',          mood: 'content',     fx: 'moon',      text: `The moon rose. {name} nodded at it, one rock to another.` },
+    // Rare
+    { id: 'paperweight', tier: 'rare',  title: 'Paperweight',       mood: 'delighted',                    text: `{name} was briefly a paperweight. It held everything together beautifully.` },
+    { id: 'tourist',  tier: 'rare',     title: 'Famous rock',       mood: 'proud',                        text: `A tourist mistook {name} for a famous rock and took forty photos. {name} signed no autographs.` },
+    { id: 'meteor',   tier: 'rare',     title: 'Shooting star',     mood: 'delighted',   fx: 'meteor',    text: `A meteor streaked overhead. "Cousin," whispered {name}.` },
+    { id: 'nearskip', tier: 'rare',     title: 'Almost skipped',    mood: 'delighted',                    text: `Someone nearly skipped {name} across a lake. It's still shaken, and a little thrilled.` },
+    { id: 'gold',     tier: 'rare',     title: 'Fool\'s gold',      mood: 'proud',                        text: `For one second, the light made {name} look like solid gold. {name} is not telling anyone.` },
+    { id: 'geologist',tier: 'rare',     title: 'Geologist',         mood: 'delighted',                    text: `A geologist looked at {name} for a long time and whispered "interesting." {name} has not recovered.` },
+    { id: 'zen',      tier: 'rare',     title: 'The work',          mood: 'delighted',   manual: true,     text: `You and {name} sat in perfect stillness. Scientists would call it nothing. {name} calls it "the work."` }
+  ];
+  const TIER_LABEL = { common: 'Common', uncommon: 'Uncommon', rare: 'Rare' };
+
+  /* ---------- Action reactions ---------- */
+  const SCENERY = ['a sunlit meadow', 'a suspiciously nice parking lot', 'the bottom of a calm creek', 'a windowsill with a good view', 'a hill that is mostly just a bump', 'the cool side of a garden wall', 'a beach with only three grains of sand', 'the space under a couch'];
+  const ACTIONS = {
+    pet: {
+      verb: 'You pet {name}.', stat: 'pets', anim: 'squish',
+      lines: [
+        { t: `{name} accepts the pets with dignity.`, m: 'content' },
+        { t: `Pet detected. {name} remains rock-shaped.`, m: 'content' },
+        { t: `{name} feels something. It might be moss.`, m: 'content' },
+        { t: `Scientists have confirmed that {name} enjoyed that. Scientists were not consulted.`, m: 'proud' },
+        { t: `{name} allows it, as is its right.`, when: ['smug'] },
+        { t: `Touch is a construct. {name} is still glad you did it.`, when: ['existential'], m: 'content' },
+        { t: `{name} felt seen. Mostly as a rock, but still.`, when: ['inadequate'], m: 'content' },
+        { t: `{name} is tracking your hand with narrowed eyes.`, when: ['suspicious'] },
+        { t: `{name} did not wake up. It's fine. It's a rock.`, when: ['sleepy'] }
+      ]
+    },
+    talk: {
+      verb: 'You talked to {name}.', stat: 'talks', anim: 'pop',
+      lines: [
+        { t: `You told {name} about your day. It listened with its entire body.`, m: 'content' },
+        { t: `You said "good rock." {name} is processing this at geological speed.`, m: 'proud' },
+        { t: `You whispered a secret. {name} will keep it forever. It's a rock. That's the whole job.`, m: 'content' },
+        { t: `You asked {name} for advice. It said nothing, which was weirdly the best advice.`, m: 'existential' },
+        { t: `You complained about Mondays. {name} has seen millions of years and has no strong feelings about Mondays.`, m: 'smug' },
+        { t: `You said it's a great rock. {name} wants to believe you.`, when: ['inadequate'], m: 'content' },
+        { t: `You talked. {name} is asleep, but it feels like it heard. Probably not.`, when: ['sleepy'] },
+        { t: `{name} listened with narrowed eyes. Who sent you?`, when: ['suspicious'] }
+      ]
+    },
+    walk: {
+      verb: 'You took {name} for a walk.', stat: 'walks', anim: 'wobble',
+      lines: [
+        { t: () => `You describe ${pick(SCENERY)}. {name} doesn't move an inch and loves every second.`, m: 'content' },
+        { t: () => `Out for a walk, in theory. Destination: ${pick(SCENERY)}. {name} approves of the vibes.`, m: 'proud' },
+        { t: () => `You described ${pick(SCENERY)} in great detail. {name} went along in spirit.`, m: 'content' },
+        { t: () => `You walked, {name} stayed. You both went to ${pick(SCENERY)} in your own way.`, m: 'smug' }
+      ]
+    },
+    pebble: {
+      verb: 'You showed {name} a pebble.', stat: 'pebbles', anim: 'pop',
+      lines: [
+        { t: `A smaller pebble! {name} has never felt taller.`, m: 'proud' },
+        { t: `The pebble was rounder. {name} took this as a personal attack.`, m: 'inadequate' },
+        { t: `{name} and the pebble sat together in silence. It was perfect.`, m: 'content' },
+        { t: `{name} sized up the pebble. Verdict: acceptable friend.`, m: 'smug' },
+        { t: `{name} looked at the pebble for a long time. They both understood.`, when: ['inadequate'], m: 'content' }
+      ]
+    },
+    nothing: {
+      verb: 'You did nothing.', stat: 'nothing', anim: null,
+      lines: [
+        { t: `{name} did nothing back. Great teamwork.`, m: 'content' },
+        { t: `You sat there. {name} sat there. It was easy for one of you.`, m: 'smug' },
+        { t: `Doing nothing together. {name} has been waiting for someone who gets it.`, m: 'proud' },
+        { t: `Stillness. {name} finds it deeply relatable.`, when: ['existential'] },
+        { t: `You both rested. {name} is better at it, but you're doing great.`, when: ['sleepy'] }
+      ]
+    }
+  };
+
+  const AWAY_LINES = [
+    `{name} stayed exactly where it was. It's very proud of this.`,
+    `{name} held its position. It's been a long shift.`,
+    `Nothing moved. {name} calls that a win.`,
+    `{name} watched the world go by without lifting a pebble.`
+  ];
+
+  /* ---------- State ---------- */
+  const defaults = () => ({
+    name: 'Rocky', mood: 'content', found: {}, log: [], lastSeen: null, born: null,
+    stats: { pets: 0, talks: 0, walks: 0, pebbles: 0, nothing: 0 }
+  });
+  let state = defaults();
+  let moodSince = Date.now();
+  let lastInteract = Date.now();
+  let lastEventId = null;
+  let petTimes = [];
+  let nothingStreak = 0;
+  let blinking = false;
+  const look = { x: 0, y: 0 };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const s = Object.assign(defaults(), JSON.parse(raw));
+        s.stats = Object.assign(defaults().stats, s.stats || {});
+        if (!Array.isArray(s.log)) s.log = [];
+        if (!s.found || typeof s.found !== 'object') s.found = {};
+        if (typeof s.name !== 'string') s.name = 'Rocky';
+        return s;
+      }
+    } catch (e) { /* storage unavailable or corrupt: start fresh */ }
+    return defaults();
+  }
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  const nm = () => (state.name || '').trim() || 'Rocky';
+  const fill = (s) => s.split('{name}').join(nm());
+
+  /* ---------- Elements ---------- */
+  const el = {
+    bubble: $('#bubble'), toast: $('#toast'), fx: $('#fx'), svg: $('#rockSvg'), body: $('#rockBody'),
+    mouth: $('#mouth'), browL: $('#browL'), browR: $('#browR'), lidL: $('#lidL'), lidR: $('#lidR'),
+    cheekL: $('#cheekL'), cheekR: $('#cheekR'), pupils: $('#pupils'), sun: $('#sun'),
+    nameInput: $('#nameInput'), moodChip: $('#moodChip'),
+    away: $('#away'), awayTitle: $('#awayTitle'), awayList: $('#awayList'), awayClose: $('#awayClose'),
+    log: $('#log'), bookGrid: $('#bookGrid'), bookCount: $('#bookCount'),
+    tabLog: $('#tabLog'), tabBook: $('#tabBook'), panelLog: $('#panelLog'), panelBook: $('#panelBook'),
+    stats: $('#stats'), reset: $('#resetBtn')
+  };
+
+  /* ---------- Face ---------- */
+  function setBrow(node, [dy, rot], cx) {
+    node.setAttribute('transform', `translate(0 ${dy}) rotate(${rot} ${cx} 170)`);
+  }
+  function applyLids() {
+    const f = MOODS[state.mood] || MOODS.content;
+    const s = blinking ? 1 : f.lid;
+    el.lidL.style.transform = el.lidR.style.transform = `scaleY(${s})`;
+  }
+  function updatePupils() {
+    const f = MOODS[state.mood] || MOODS.content;
+    const x = clamp(look.x * 5 + f.look[0], -6, 6);
+    const y = clamp(look.y * 5 + f.look[1], -6, 6);
+    el.pupils.style.transform = `translate(${x}px, ${y}px)`;
+  }
+  function applyFace() {
+    const f = MOODS[state.mood] || MOODS.content;
+    el.mouth.setAttribute('d', f.mouth);
+    el.mouth.setAttribute('fill', f.fill ? 'var(--face)' : 'none');
+    setBrow(el.browL, f.bl, 172);
+    setBrow(el.browR, f.br, 228);
+    el.cheekL.style.opacity = el.cheekR.style.opacity = f.cheek;
+    applyLids();
+    updatePupils();
+    el.moodChip.textContent = 'Mood: ' + f.label;
+  }
+  function setMood(m, { silent = false } = {}) {
+    if (!MOODS[m]) m = 'content';
+    const changed = state.mood !== m;
+    state.mood = m;
+    moodSince = Date.now();
+    applyFace();
+    if (changed && !silent) anim('pop');
+  }
+  function anim(cls) {
+    if (!cls || prefersReduced()) return;
+    el.body.classList.remove('squish', 'hop', 'pop', 'wobble');
+    void el.body.getBoundingClientRect();
+    el.body.classList.add(cls);
+  }
+  el.body.addEventListener('animationend', () => el.body.classList.remove('squish', 'hop', 'pop', 'wobble'));
+
+  window.addEventListener('pointermove', (e) => {
+    if (look.raf) return;
+    look.raf = requestAnimationFrame(() => {
+      look.raf = 0;
+      const r = el.svg.getBoundingClientRect();
+      look.x = clamp((e.clientX - (r.left + r.width * .5)) / 250, -1, 1);
+      look.y = clamp((e.clientY - (r.top + r.height * .6)) / 250, -1, 1);
+      updatePupils();
+    });
+  });
+  (function blinkLoop() {
+    setTimeout(() => {
+      const f = MOODS[state.mood] || MOODS.content;
+      if (!document.hidden && f.lid < .9) {
+        blinking = true; applyLids();
+        setTimeout(() => { blinking = false; applyLids(); }, 140);
+      }
+      blinkLoop();
+    }, rand(2500, 6500));
+  })();
+
+  /* ---------- Speech, toast ---------- */
+  function say(text) {
+    el.bubble.textContent = text;
+    if (!prefersReduced()) {
+      el.bubble.animate([{ opacity: .2, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 220 });
+    }
+  }
+  let toastTimer;
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.toast.classList.remove('show'), 3400);
+  }
+
+  /* ---------- Ambient effects ---------- */
+  function mk(emoji, css = {}) {
+    const s = document.createElement('span');
+    s.className = 'fx';
+    s.textContent = emoji;
+    Object.assign(s.style, css);
+    el.fx.appendChild(s);
+    return s;
+  }
+  function fly(emoji, { top = 50, dur = 6000, dir = 1, bob = 14, rot = 0, size } = {}) {
+    const s = mk(emoji, { top: top + '%' });
+    if (size) s.style.fontSize = size;
+    const a = s.animate([
+      { left: dir > 0 ? '-12%' : '112%', transform: 'translateY(0) rotate(0deg)' },
+      { left: '50%', transform: `translateY(${-bob}px) rotate(${rot}deg)`, offset: .5 },
+      { left: dir > 0 ? '112%' : '-12%', transform: `translateY(0) rotate(${rot * 2}deg)` }
+    ], { duration: dur, easing: 'linear' });
+    a.onfinish = () => s.remove();
+  }
+  const FX = {
+    leaf: () => fly('🍃', { top: 52, dur: 6500, bob: 40, rot: 140 }),
+    bird: () => fly('🐦', { top: 16, dur: 4200, dir: -1, bob: 10 }),
+    cloud: () => fly('☁️', { top: 6, dur: 11000, bob: 0, size: '38px' }),
+    ant: () => fly('🐜', { top: 85, dur: 7000, bob: 0, size: '16px' }),
+    snail: () => fly('🐌', { top: 84, dur: 12000, bob: 0, size: '20px' }),
+    dog: () => fly('🐕', { top: 78, dur: 3200, dir: -1, bob: 6 }),
+    glow: () => {
+      el.sun.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.4)' }, { transform: 'scale(1)' }], { duration: 2600, easing: 'ease-in-out' });
+    },
+    rain: () => {
+      for (let i = 0; i < 24; i++) {
+        const s = mk('💧', { left: rand(8, 92) + '%', top: '-8%', fontSize: '16px' });
+        const a = s.animate([
+          { top: '-8%', opacity: 0 }, { opacity: .9, offset: .15 }, { top: '88%', opacity: .9 }
+        ], { duration: 1100, delay: i * 100, easing: 'ease-in', fill: 'backwards' });
+        a.onfinish = () => s.remove();
+      }
+    },
+    sparkle: () => {
+      for (let i = 0; i < 7; i++) {
+        const s = mk('✨', { left: rand(28, 70) + '%', top: rand(26, 62) + '%' });
+        const a = s.animate([
+          { opacity: 0, transform: 'scale(.4) translateY(6px)' },
+          { opacity: 1, transform: 'scale(1.15) translateY(0)', offset: .4 },
+          { opacity: 0, transform: 'scale(.6) translateY(-14px)' }
+        ], { duration: 1500, delay: i * 140, fill: 'backwards' });
+        a.onfinish = () => s.remove();
+      }
+    },
+    butterfly: () => {
+      const s = mk('🦋');
+      const a = s.animate([
+        { left: '-8%', top: '30%' },
+        { left: '30%', top: '16%', offset: .3 },
+        { left: '46%', top: '33%', offset: .5 },
+        { left: '48%', top: '34%', offset: .75 },
+        { left: '112%', top: '10%' }
+      ], { duration: 7000, easing: 'ease-in-out' });
+      a.onfinish = () => s.remove();
+    },
+    moon: () => {
+      const s = mk('🌙', { left: '10%', top: '10%', fontSize: '30px' });
+      const a = s.animate([
+        { opacity: 0, transform: 'translateY(24px)' },
+        { opacity: 1, transform: 'translateY(0)', offset: .3 },
+        { opacity: 1, transform: 'translateY(0)', offset: .75 },
+        { opacity: 0, transform: 'translateY(-8px)' }
+      ], { duration: 5000 });
+      a.onfinish = () => s.remove();
+    },
+    meteor: () => {
+      const s = mk('☄️', { fontSize: '30px' });
+      const a = s.animate([
+        { left: '92%', top: '-8%', opacity: 0 },
+        { opacity: 1, offset: .15 },
+        { left: '8%', top: '40%', opacity: 0 }
+      ], { duration: 1800, easing: 'ease-in' });
+      a.onfinish = () => s.remove();
+    }
+  };
+  function fx(name) {
+    if (!name || prefersReduced() || !FX[name]) return;
+    FX[name]();
+  }
+
+  /* ---------- Log ---------- */
+  function addLog(entry) {
+    state.log.push(entry);
+    state.log.sort((a, b) => b.t - a.t);
+    if (state.log.length > 60) state.log.length = 60;
+  }
+  function fmtTime(t) {
+    const d = new Date(t);
+    const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return d.toDateString() === new Date().toDateString()
+      ? time
+      : d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + time;
+  }
+  function tag(text, cls) {
+    const s = document.createElement('span');
+    s.className = 'tag' + (cls ? ' ' + cls : '');
+    s.textContent = text;
+    return s;
+  }
+  function renderLog() {
+    el.log.textContent = '';
+    if (!state.log.length) {
+      const p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = 'Nothing has happened yet. That is the rock\'s specialty.';
+      el.log.append(p);
+      return;
+    }
+    state.log.slice(0, 40).forEach((e) => {
+      const li = document.createElement('li');
+      li.className = 'entry tier-' + (e.tier || 'common');
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const time = document.createElement('span');
+      time.textContent = fmtTime(e.t);
+      meta.append(time);
+      if (e.tier === 'rare') meta.append(tag('Rare moment', 'rare'));
+      if (e.kind === 'away') meta.append(tag('While you were away'));
+      if (e.isNew) meta.append(tag('New in scrapbook'));
+      const p = document.createElement('p');
+      if (e.lead) {
+        const strong = document.createElement('strong');
+        strong.textContent = e.lead + ' ';
+        p.append(strong);
+      }
+      p.append(document.createTextNode(e.text));
+      li.append(meta, p);
+      el.log.append(li);
+    });
+  }
+  function renderBook() {
+    const total = EVENTS.length;
+    const found = EVENTS.filter((e) => state.found[e.id]).length;
+    el.tabBook.textContent = `Scrapbook (${found}/${total})`;
+    el.bookCount.textContent = `${found} of ${total} moments found. Keep poking, or just wait.`;
+    el.bookGrid.textContent = '';
+    EVENTS.forEach((ev) => {
+      const n = state.found[ev.id] || 0;
+      const card = document.createElement('div');
+      card.className = 'moment tier-' + ev.tier + (n ? '' : ' locked');
+      const h = document.createElement('h3');
+      h.textContent = n ? ev.title : '???';
+      const p = document.createElement('p');
+      p.textContent = n ? fill(ev.text) : (ev.tier === 'rare' ? 'A rare moment is out there somewhere.' : 'Not seen yet.');
+      const r = document.createElement('div');
+      r.className = 'rarity';
+      r.textContent = TIER_LABEL[ev.tier] + (n > 1 ? ` · seen ${n} times` : '');
+      card.append(h, p, r);
+      el.bookGrid.append(card);
+    });
+  }
+  function renderStats() {
+    const n = state.stats.pets;
+    el.stats.textContent = n === 0
+      ? `You haven't pet ${nm()} yet. It isn't waiting. (It's waiting.)`
+      : `You've pet ${nm()} ${n} time${n === 1 ? '' : 's'}. It has noted ${n === 1 ? 'it' : 'every one'}.`;
+  }
+  function renderAll() { renderLog(); renderBook(); renderStats(); }
+
+  /* ---------- Events ---------- */
+  function weightedPick(pool) {
+    const ws = pool.map((e) => (e.id === lastEventId ? 0 : state.found[e.id] ? 1 : 3));
+    const total = ws.reduce((a, b) => a + b, 0);
+    if (!total) return pick(pool);
+    let r = Math.random() * total;
+    for (let i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) return pool[i]; }
+    return pool[pool.length - 1];
+  }
+  function rollTier(allowRare = true) {
+    const r = Math.random();
+    if (allowRare && r < .08) return 'rare';
+    return r < .35 ? 'uncommon' : 'common';
+  }
+  function triggerEvent(ev, { away = false, t = Date.now() } = {}) {
+    const text = fill(ev.text);
+    const firstTime = !state.found[ev.id];
+    state.found[ev.id] = (state.found[ev.id] || 0) + 1;
+    if (ev.mood) setMood(ev.mood, { silent: away });
+    lastEventId = ev.id;
+    addLog({ kind: away ? 'away' : 'event', tier: ev.tier, t, text, isNew: firstTime });
+    if (!away) {
+      say(text);
+      fx(ev.fx);
+      if (ev.tier === 'rare') {
+        anim('hop');
+        if (ev.fx !== 'sparkle') setTimeout(() => fx('sparkle'), 250);
+        toast(firstTime ? `Rare moment! New in the scrapbook: ${ev.title}` : 'Rare moment!');
+      } else if (firstTime) {
+        toast(`New in the scrapbook: ${ev.title}`);
+      }
+    }
+    save();
+    renderLog(); renderBook();
+    return text;
+  }
+  function fireRandomEvent() {
+    const tier = rollTier();
+    const pool = EVENTS.filter((e) => e.tier === tier && !e.manual);
+    triggerEvent(weightedPick(pool));
+  }
+  let evTimer;
+  function scheduleEvent(first = false) {
+    clearTimeout(evTimer);
+    evTimer = setTimeout(() => {
+      if (!document.hidden) fireRandomEvent();
+      scheduleEvent();
+    }, first ? 6000 : rand(9000, 18000));
+  }
+
+  /* ---------- Actions ---------- */
+  function pickLine(kind) {
+    const lines = ACTIONS[kind].lines;
+    const specific = lines.filter((l) => l.when && l.when.includes(state.mood));
+    const general = lines.filter((l) => !l.when);
+    const pool = specific.length && Math.random() < .6 ? specific : general;
+    return pick(pool);
+  }
+  function doAction(kind) {
+    const a = ACTIONS[kind];
+    const now = Date.now();
+    lastInteract = now;
+    state.stats[a.stat]++;
+    if (kind !== 'nothing') nothingStreak = 0;
+
+    if (kind === 'nothing') {
+      nothingStreak++;
+      if (nothingStreak >= 5) {
+        nothingStreak = 0;
+        addLog({ kind: 'action', tier: 'action', t: now, lead: fill(a.verb), text: 'Again. And again.' });
+        triggerEvent(EVENTS.find((e) => e.id === 'zen'));
+        renderStats();
+        return;
+      }
+    }
+
+    let line;
+    if (kind === 'pet') {
+      petTimes = petTimes.filter((x) => now - x < 8000);
+      petTimes.push(now);
+      if (petTimes.length >= 6) {
+        line = { t: `Okay. {name} has been pet enough. It isn't saying anything, but it is thinking it.`, m: 'tolerating' };
+        petTimes = [];
+      }
+    }
+    line = line || pickLine(kind);
+    const text = fill(typeof line.t === 'function' ? line.t() : line.t);
+    if (line.m) setMood(line.m, { silent: true });
+    anim(a.anim);
+    say(text);
+    addLog({ kind: 'action', tier: 'action', t: now, lead: fill(a.verb), text });
+    state.lastSeen = now;
+    save();
+    renderLog(); renderStats();
+  }
+  document.querySelectorAll('[data-action]').forEach((b) => {
+    b.addEventListener('click', () => doAction(b.dataset.action));
+  });
+  el.body.addEventListener('click', () => doAction('pet'));
+
+  /* ---------- Welcome back ---------- */
+  function formatDur(ms) {
+    const m = Math.round(ms / 60000);
+    if (m < 60) return `${m} minute${m === 1 ? '' : 's'}`;
+    const h = Math.round(ms / 3600000);
+    if (h < 48) return `${h} hour${h === 1 ? '' : 's'}`;
+    return `${Math.round(ms / 86400000)} days`;
+  }
+  function checkAway() {
+    const now = Date.now();
+    const last = state.lastSeen;
+    state.lastSeen = now;
+    if (!last) return false;
+    const gap = now - last;
+    if (gap < 60000) return false;
+
+    const items = [fill(pick(AWAY_LINES))];
+    addLog({ kind: 'away', tier: 'common', t: last + 1000, text: items[0] });
+    const n = gap < 10 * 60000 ? 0 : gap < 3600000 ? 1 : gap < 6 * 3600000 ? 2 : 3;
+    if (gap >= 10 * 60000) setMood('content', { silent: true });
+    const used = new Set();
+    for (let i = 0; i < n; i++) {
+      const tier = rollTier(gap >= 3600000);
+      const pool = EVENTS.filter((e) => e.tier === tier && !e.manual && !used.has(e.id));
+      if (!pool.length) continue;
+      const ev = weightedPick(pool);
+      used.add(ev.id);
+      items.push(triggerEvent(ev, { away: true, t: last + (gap * (i + 1)) / (n + 1) }));
+    }
+    el.awayTitle.textContent = `While you were gone (${formatDur(gap)})`;
+    el.awayList.textContent = '';
+    items.forEach((txt) => {
+      const li = document.createElement('li');
+      li.textContent = txt;
+      el.awayList.append(li);
+    });
+    el.away.hidden = false;
+    say(fill(`{name} is exactly where you left it.`));
+    save();
+    renderAll();
+    return true;
+  }
+  el.awayClose.addEventListener('click', () => { el.away.hidden = true; });
+
+  /* ---------- Name, tabs, reset ---------- */
+  el.nameInput.addEventListener('input', () => {
+    state.name = el.nameInput.value.slice(0, 16);
+    save();
+  });
+  el.nameInput.addEventListener('blur', () => {
+    if (!state.name.trim()) { state.name = 'Rocky'; el.nameInput.value = 'Rocky'; save(); }
+    renderAll();
+  });
+  el.nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.nameInput.blur(); });
+
+  function selectTab(which) {
+    const isLog = which === 'log';
+    el.tabLog.setAttribute('aria-selected', String(isLog));
+    el.tabBook.setAttribute('aria-selected', String(!isLog));
+    el.tabLog.tabIndex = isLog ? 0 : -1;
+    el.tabBook.tabIndex = isLog ? -1 : 0;
+    el.panelLog.hidden = !isLog;
+    el.panelBook.hidden = isLog;
+  }
+  el.tabLog.addEventListener('click', () => selectTab('log'));
+  el.tabBook.addEventListener('click', () => selectTab('book'));
+  [el.tabLog, el.tabBook].forEach((t) => t.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      const toBook = el.tabLog.getAttribute('aria-selected') === 'true';
+      selectTab(toBook ? 'book' : 'log');
+      (toBook ? el.tabBook : el.tabLog).focus();
+    }
+  }));
+
+  let resetArmed = false;
+  el.reset.addEventListener('click', () => {
+    if (!resetArmed) {
+      resetArmed = true;
+      el.reset.textContent = 'Really? Click again to start over';
+      setTimeout(() => { resetArmed = false; el.reset.textContent = 'Adopt a new rock'; }, 4000);
+      return;
+    }
+    resetArmed = false;
+    el.reset.textContent = 'Adopt a new rock';
+    try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+    boot();
+  });
+
+  /* ---------- Idle drift ---------- */
+  setInterval(() => {
+    if (document.hidden) return;
+    const now = Date.now();
+    if (['delighted', 'tolerating', 'inadequate'].includes(state.mood) && now - moodSince > 25000) {
+      setMood('content');
+    } else if (now - lastInteract > 80000 && now - moodSince > 40000 && !['sleepy', 'existential'].includes(state.mood)) {
+      const m = pick(['sleepy', 'existential']);
+      const txt = fill(m === 'sleepy'
+        ? `{name} has dozed off. It looks the same, but more peaceful.`
+        : `{name} has been left alone with its thoughts.`);
+      setMood(m);
+      say(txt);
+      addLog({ kind: 'idle', tier: 'common', t: now, text: txt });
+      renderLog();
+    }
+    state.lastSeen = now;
+    save();
+  }, 5000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      state.lastSeen = Date.now();
+      save();
+    } else {
+      checkAway();
+    }
+  });
+  window.addEventListener('pagehide', () => { state.lastSeen = Date.now(); save(); });
+
+  /* ---------- Boot ---------- */
+  function boot() {
+    state = load();
+    if (!MOODS[state.mood]) state.mood = 'content';
+    moodSince = Date.now();
+    lastInteract = Date.now();
+    lastEventId = null;
+    petTimes = [];
+    nothingStreak = 0;
+    el.away.hidden = true;
+    el.nameInput.value = state.name;
+    applyFace();
+
+    if (!state.born) {
+      state.born = Date.now();
+      state.lastSeen = state.born;
+      addLog({ kind: 'system', tier: 'action', t: state.born, text: fill(`{name} has been adopted. Expectations are low.`) });
+      say(fill(`{name} has arrived. It is, as advertised, a rock.`));
+      save();
+      renderAll();
+    } else {
+      renderAll();
+      if (!checkAway()) say(fill(`{name} is exactly where you left it.`));
+    }
+    scheduleEvent(true);
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
